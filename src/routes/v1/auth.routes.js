@@ -1,12 +1,14 @@
 import { Router } from 'express';
-import { loginUser, registerUser, verifyUserEmail, forgotPassword } from '../../controllers/customer.controller.js';
+import { loginUser, registerUser, verifyUserEmail, forgotPassword } from '../../controllers/auth.controller.js';
+import { validateRequest } from '../../utils/validators.js';
+import { userValidationSchema } from '../../utils/validator/user.schema.js';
 
-const userRouter = Router();
+const authRouter = Router();
 
-userRouter.post('/auth/register', registerUser);
-userRouter.post('/auth/login', loginUser);
-userRouter.post('/auth/verify-email', verifyUserEmail);
-userRouter.post('/auth/forgot-password', forgotPassword);
-userRouter.post('/auth/reset-password',);
+authRouter.post('/register', validateRequest(userValidationSchema), registerUser);
+authRouter.post('/login', loginUser);
+authRouter.post('/verify-email', verifyUserEmail);
+authRouter.post('/forgot-password', forgotPassword);
+// authRouter.post('/reset-password',);
 
-export { userRouter };
+export { authRouter };

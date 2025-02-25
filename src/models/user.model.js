@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 
-const customerSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -33,17 +33,20 @@ const customerSchema = new mongoose.Schema({
     },
     profileImage: {
         type: String,
+        required: false
     },
     isVerified: {
         type: Boolean,
-        default: false
+        default: false,
+        required: false
     },
     verificationToken: {
         type: String,
+        required: false
     }
 }, { timestamps: true });
 
-customerSchema.pre('save', async function (next) {
+userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         return next();
     }
@@ -52,4 +55,4 @@ customerSchema.pre('save', async function (next) {
     next();
 });
 
-export const Customer = mongoose.model('Customer', customerSchema);
+export const User = mongoose.model('User', userSchema);

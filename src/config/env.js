@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config({ path: path.join(import.meta.dirname, '../../env.js') });
+dotenv.config({ path: path.join(import.meta.dirname, '../../.env') });
 
 export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
