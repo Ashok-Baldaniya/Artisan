@@ -1,9 +1,11 @@
 import * as winston from 'winston';
+import morgan from 'morgan';
+import fs from 'fs';
+import path from 'path';
 
 export const logger = winston.createLogger({
     format: winston.format.combine(
         winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        winston.format.colorize({ all: true }),
         winston.format.prettyPrint(
             (info) => `${info.timestamp} ${info.level}: ${info.message}`,
         ),
@@ -14,3 +16,14 @@ export const logger = winston.createLogger({
         new winston.transports.File({ filename: "error.log", level: "error", dirname: "logs" }),
     ],
 });
+
+
+export function morganMiddleware() {
+    const logStream = fs.createWriteStream(path.join(import.meta.dirname, '../../logs/access.log'), { flags: 'a', autoClose: true });
+
+    morgan.format('myformat', '[:date[iso]] ":method :url" :status - [:response-time ms]');
+
+    const response = morgan('myformat', { stream: logStream });
+
+    return response;
+}
