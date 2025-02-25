@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { config } from './src/config/env.js';
 import { app } from './src/app.js';
 
-const PORT = config.port || 3000;
+const PORT = config.port;
 
 mongoose
   .connect(config.mongoUri)
