@@ -3,16 +3,15 @@ import { User } from "../models/user.model.js";
 
 export const registerUser = async (req, res) => {
     try {
-
         const { email } = req.body;
 
-        const existingCustomer = await User.findOne({ email });
-        if (existingCustomer) {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
             return res.status(400).json({ error: 'User already exists' });
         }
 
-        const createdCustomer = await User.create(req.body);
-        return res.status(200).json(createdCustomer);
+        const createdUser = await User.create(req.body);
+        return res.status(200).json({ data: createdUser, message: 'User sign-up success' });
     } catch (error) {
         return res.status(500).json({ Error: error.message });
     }
