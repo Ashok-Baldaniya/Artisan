@@ -1,75 +1,65 @@
-import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { config } from '../config/env';
-import User from '../models/customer.model';
-import { UserRole } from '../types/models/user.interface';
-import { ApiError } from '../utils/errors/api.error';
+import { config } from '../config/env.js';
+import { User } from '../models/user.model.js';
+// import { ApiError } from '../utils/errors/api.error';
 
-// Extend Express Request interface to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        email: string;
-        role: UserRole;
-      };
-    }
-  }
-}
-
-interface JwtPayload {
-  id: string;
-  email: string;
-  role: UserRole;
-}
-
-export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new ApiError(401, 'Authentication required');
+      return res.status(401).json({
+        message: 'Authentication required',
+      })
     }
 
     const token = authHeader.split(' ')[1];
     if (!token) {
-      throw new ApiError(401, 'Invalid token format');
+      return res.status(401).json({
+        message: 'Invalid token format',
+      })
     }
 
     try {
-      const decoded = jwt.verify(token, config.jwtSecret) as JwtPayload;
-      
-      // Check if user still exists in database
+      const decoded = jwt.verify(token, config.jwtSecret);
+
       const userExists = await User.exists({ _id: decoded.id });
       if (!userExists) {
-        throw new ApiError(401, 'User no longer exists');
+        return res.status(401).json({
+          message: 'User no longer exists',
+        })
       }
-      
+
       req.user = {
         id: decoded.id,
         email: decoded.email,
         role: decoded.role,
       };
-      
+
       next();
     } catch (err) {
-      throw new ApiError(401, 'Invalid or expired token');
+      return res.status(401).json({
+        message: 'Invalid or expired token',
+      })
     }
   } catch (error) {
     next(error);
   }
 };
 
-export const authorizeRoles = (...roles: UserRole[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+export const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
     if (!req.user) {
-      return next(new ApiError(401, 'Authentication required'));
+      return next(res.status(401).json({
+        message: 'Authentication required',
+      }));
     }
-    
+
     if (!roles.includes(req.user.role)) {
-      return next(new ApiError(403, 'You do not have permission to perform this action'));
+      return next(res.status(401).json({
+        message: 'You do not have permission to perform this action',
+      }));
     }
-    
+
     next();
   };
 };

@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
+import { config } from '../config/env.js';
 
 export const registerUser = async (req, res) => {
     try {
@@ -21,23 +23,23 @@ export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const customer = await User.findOne({ email });
-        if (!customer) {
+        const user = await User.findOne({ email });
+        if (!user) {
             res.status(400).json({ error: 'User not found' });
             return;
         }
 
-        const isMatch = await bcrypt.compare(password, customer.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            res.status(400).json({ error: 'Invalid password' });
+            res.status(400).json({ error: 'Invalid email or password' });
             return;
         }
 
-        res.status(200).json(customer);
-        return;
+        const token = jwt.sign({ id: user._id }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
+
+        return res.status(200).json({ token, message: 'User login successfully!' });
     } catch (error) {
-        res.status(500).json({ error: error });
-        return;
+        return res.status(500).json({ error: error });
     }
 }
 
@@ -45,20 +47,18 @@ export const verifyUserEmail = async (req, res) => {
     try {
         const { email } = req.body;
 
-        const customer = await User.findOne({ email });
-        if (!customer) {
+        const user = await User.findOne({ email });
+        if (!user) {
             res.status(400).json({ error: 'User not found' });
             return;
         }
 
-        customer.isVerified = true;
-        await customer.save();
+        user.isVerified = true;
+        await user.save();
 
-        res.status(200).json(customer);
-        return;
+        return res.status(200).json({ message: 'Email verified!!' });
     } catch (error) {
-        res.status(500).json({ error: error });
-        return;
+        return res.status(500).json({ error: error });
     }
 }
 
@@ -66,38 +66,31 @@ export const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
 
-        const customer = await User.findOne({ email });
-        if (!customer) {
-            res.status(400).json({ error: 'User not found' });
-            return;
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ error: 'User not found' });
         }
 
-        res.status(200).json(customer);
-        return;
+        return res.status(200).json(user);
     } catch (error) {
-        res.status(500).json({ error: error });
-        return;
+        return res.status(500).json({ error: error });
     }
 }
-
 
 export const resetPassword = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const customer = await User.findOne({ email });
-        if (!customer) {
-            res.status(400).json({ error: 'User not found' });
-            return;
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ error: 'User not found' });
         }
 
-        customer.password = password;
-        await customer.save();
+        user.password = password;
+        await user.save();
 
-        res.status(200).json(customer);
-        return;
+        return res.status(200).json(user);
     } catch (error) {
-        res.status(500).json({ error: error });
-        return;
+        return res.status(500).json({ error: error });
     }
 }
