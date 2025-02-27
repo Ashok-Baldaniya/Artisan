@@ -22,7 +22,7 @@ export const authenticate = async (req, res, next) => {
     try {
       const decoded = jwt.verify(token, config.jwtSecret);
 
-      const userExists = await User.exists({ _id: decoded.id });
+      const userExists = await User.findOne({ _id: decoded.id });
       if (!userExists) {
         return res.status(401).json({
           message: 'User no longer exists',
@@ -30,9 +30,9 @@ export const authenticate = async (req, res, next) => {
       }
 
       req.user = {
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role,
+        id: userExists.id,
+        email: userExists.email,
+        role: userExists.role,
       };
 
       next();

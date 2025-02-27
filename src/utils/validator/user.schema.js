@@ -22,10 +22,11 @@ export const userLoginSchema = Joi.object({
     password: Joi.string().trim().min(5).required(),
 })
 
-export const userVerifyEmailSchema = Joi.object({
+export const userForgotPasswordSchema = Joi.object({
     email: Joi.string().email().required(),
 })
 
-export const userForgotPasswordSchema = Joi.object({
+export const userResetPasswordSchema = Joi.object({
     email: Joi.string().email().required(),
+    password: Joi.string().trim().min(5).required(),
 })
