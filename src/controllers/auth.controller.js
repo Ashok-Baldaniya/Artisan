@@ -11,7 +11,7 @@ export const signupUser = async (req, res) => {
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ error: 'User already exists' });
+            return res.status(409).json({ error: 'User already exists' });
         }
 
         const verificationToken = generateVerificationToken(20);
@@ -34,7 +34,7 @@ export const verifyUserEmail = async (req, res) => {
         const { token } = req.query;
 
         const user = await User.findOne({ verificationToken: token });
-        if (!user) {
+        if (user.isVerified) {
             return res.status(400).json({ error: 'User is already verified' });
         }
 
@@ -54,11 +54,11 @@ export const loginUser = async (req, res) => {
 
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ error: 'User not found' });
+            return res.status(404).json({ error: 'User not exist!' });
         }
 
         if (!user.isVerified) {
-            return res.status(400).json({ error: 'Please verify email first to login' });
+            return res.status(400).json({ error: 'Please verify email first to login', isVerified: false });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -80,7 +80,7 @@ export const forgotPassword = async (req, res) => {
 
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ error: 'Email not found!' });
+            return res.status(404).json({ error: "User doesn't exist with given email!" });
         }
 
         const verificationToken = generateVerificationToken(20);
@@ -89,29 +89,11 @@ export const forgotPassword = async (req, res) => {
 
         await user.save();
 
-        const verificationLink = `${config.domain}/api/auth/verify-forgot-password?token=${verificationToken}`;
+        const verificationLink = `${config.domain}/api/auth/confirm-forgot-password?token=${verificationToken}`;
 
         await sendEmail(email, user.name, emailTypes.forgotPassword, verificationLink);
 
         return res.status(200).json({ message: 'Please check your email to reset the password' });
-    } catch (error) {
-        return res.status(500).json({ error: error });
-    }
-}
-
-export const verifyForgotPasswordToken = async (req, res) => {
-    try {
-        const { token } = req.query;
-
-        const user = await User.findOne({ verificationToken: token });
-        if (!user) {
-            return res.status(400).json({ error: 'Invalid token' });
-        }
-
-        // user.verificationToken = undefined;
-        // await user.save();
-
-        return res.status(200).json({ message: 'Token verified successfully!' });
     } catch (error) {
         return res.status(500).json({ error: error });
     }
@@ -124,7 +106,7 @@ export const confirmForgotPassword = async (req, res) => {
 
         const user = await User.findOne({ verificationToken: token });
         if (!user) {
-            return res.status(400).json({ error: 'Invalid token' });
+            return res.status(404).json({ error: 'Invalid token' });
         }
 
         user.password = password;
@@ -141,19 +123,20 @@ export const confirmForgotPassword = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
     try {
-        const { email, password, newPassword } = req.body;
-        if (req.user.email !== email) {
-            return res.status(400).json({ error: 'Unauthorized access' });
-        }
+        const { password, newPassword } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: req.user.email });
         if (!user) {
-            return res.status(400).json({ error: 'User not found' });
+            return res.status(404).json({ error: 'Error updating password' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json({ error: 'Invalid password' });
+            return res.status(400).json({ error: 'Please enter valid old password' });
+        }
+
+        if (password === newPassword) {
+            return res.status(400).json({ error: 'New password are match with old password' });
         }
 
         user.password = newPassword;
@@ -162,7 +145,7 @@ export const resetPassword = async (req, res) => {
 
         await sendEmail(user.email, user.name, emailTypes.resetPassword);
 
-        return res.status(200).json({ data: user, message: 'Password reset successfully!' });
+        return res.status(200).json({ message: 'Password reset successfully!' });
     } catch (error) {
         return res.status(500).json({ error: error });
     }

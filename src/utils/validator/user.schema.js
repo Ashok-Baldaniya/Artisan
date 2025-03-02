@@ -7,10 +7,10 @@ export const userSignupSchema = Joi.object({
     isSeller: Joi.boolean().default(false).optional(),
     phone: Joi.string().length(10).pattern(/^(?!0)[0-9]{10}$/).required(),
     address: Joi.object({
-        street: Joi.string(),
-        city: Joi.string(),
-        zip: Joi.string().length(6),
-        country: Joi.string(),
+        street: Joi.string().trim().required(),
+        city: Joi.string().trim().required(),
+        zip: Joi.string().length(6).trim().required(),
+        country: Joi.string().trim().required(),
     }).required(),
     profileImage: Joi.string(),
     isVerified: Joi.boolean().default(false),
@@ -31,7 +31,6 @@ export const userConfirmForgotPasswordSchema = Joi.object({
 })
 
 export const userResetPasswordSchema = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().trim().min(5).required(),
+    password: Joi.string().trim().required(),
     newPassword: Joi.string().trim().min(5).required()
 })
