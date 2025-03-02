@@ -32,7 +32,7 @@ export const authenticate = async (req, res, next) => {
       req.user = {
         id: userExists.id,
         email: userExists.email,
-        role: userExists.role,
+        isSeller: userExists.isSeller,
       };
 
       next();
@@ -46,7 +46,7 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
-export const authorizeRoles = (...roles) => {
+export const authRoles = () => {
   return (req, res, next) => {
     if (!req.user) {
       return next(res.status(401).json({
@@ -54,9 +54,9 @@ export const authorizeRoles = (...roles) => {
       }));
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!req.user.isSeller) {
       return next(res.status(401).json({
-        message: 'You do not have permission to perform this action',
+        message: 'Only Admin is Authorized!',
       }));
     }
 

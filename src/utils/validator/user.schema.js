@@ -4,16 +4,16 @@ export const userSignupSchema = Joi.object({
     name: Joi.string().trim().min(3).required(),
     email: Joi.string().email().required(),
     password: Joi.string().trim().min(5).required(),
-    role: Joi.string().valid('Artisan', 'Customer', 'Admin').default('Customer').optional(),
+    isSeller: Joi.boolean().default(false).optional(),
     phone: Joi.string().length(10).pattern(/^(?!0)[0-9]{10}$/).required(),
     address: Joi.object({
         street: Joi.string(),
         city: Joi.string(),
-        zip: Joi.string(),
+        zip: Joi.string().length(6),
         country: Joi.string(),
-    }),
+    }).required(),
     profileImage: Joi.string(),
-    isVerified: Joi.boolean(),
+    isVerified: Joi.boolean().default(false),
     verificationToken: Joi.string()
 })
 

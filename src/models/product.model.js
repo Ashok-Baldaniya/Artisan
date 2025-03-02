@@ -4,7 +4,7 @@ import { ProductStatus } from "../types/models/product.interface";
 const productSchema = new mongoose.Schema({
   artisanId: {
     type: mongoose.Types.ObjectId,
-    ref: 'Customer',
+    ref: 'User',
     required: true
   },
   title: {

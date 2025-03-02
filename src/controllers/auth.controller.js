@@ -7,7 +7,7 @@ import { generateVerificationToken } from "../services/auth.service.js";
 
 export const signupUser = async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, name } = req.body;
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -16,20 +16,18 @@ export const signupUser = async (req, res) => {
 
         const verificationToken = generateVerificationToken(20);
 
-        const verificationLink = `${config.domain}/api/auth/verify-email?token=${verificationToken}`;
-
-        const emailPromise = sendEmail(req.body.email, req.body.name, emailTypes.verification, verificationLink);
-
         req.body.verificationToken = verificationToken;
-        const createUserPromise = User.create(req.body);
 
-        await Promise.all([emailPromise, createUserPromise]);
+        await User.create(req.body);
+
+        const verificationLink = `${config.domain}/api/auth/verify-email?token=${verificationToken}`;
+        await sendEmail(email, name, emailTypes.verification, verificationLink);
 
         return res.status(200).json({ message: 'User sign-up successfully, please check mail to verify!' });
     } catch (error) {
         return res.status(500).json({ Error: error.message });
     }
-}
+};
 
 export const verifyUserEmail = async (req, res) => {
     try {

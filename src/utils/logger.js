@@ -18,7 +18,7 @@ export const logger = winston.createLogger({
 });
 
 
-export function morganMiddleware() {
+export const morganMiddleware = () => {
     const logStream = fs.createWriteStream(path.join(import.meta.dirname, '../../logs/access.log'));
 
     morgan.format('myformat', '[:date[iso]] ":method :url" :status - [:response-time ms]');

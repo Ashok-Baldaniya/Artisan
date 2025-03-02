@@ -3,8 +3,9 @@ import mongoose from "mongoose";
 const artisanSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Customer',
-        required: true
+        ref: 'User',
+        required: true,
+        unique: true
     },
     businessName: {
         type: String,

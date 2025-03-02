@@ -16,11 +16,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    role: {
-        type: String,
-        enum: ['Artisan', 'Customer', 'Admin'],
-        default: 'Customer',
-        required: true
+    isSeller: {
+        type: Boolean,
+        required: true,
+        default: false
     },
     phone: {
         type: String,
@@ -28,10 +27,10 @@ const userSchema = new mongoose.Schema({
         unique: true
     },
     address: {
-        street: { type: String },
-        city: { type: String },
-        zip: { type: String },
-        country: { type: String }
+        street: { type: String, required: true },
+        city: { type: String, required: true },
+        zip: { type: Number, required: true },
+        country: { type: String, required: true }
     },
     profileImage: {
         type: String,
@@ -39,8 +38,8 @@ const userSchema = new mongoose.Schema({
     },
     isVerified: {
         type: Boolean,
-        default: false,
-        required: true
+        required: true,
+        default: false
     },
     verificationToken: {
         type: String,
