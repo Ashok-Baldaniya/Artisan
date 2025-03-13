@@ -46,17 +46,47 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
-export const authRoles = () => {
+export const authSeller = () => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        message: 'Authentication required',
+      });
+    }
+
+    if (!req.user.isSeller) {
+      return res.status(403).json({
+        message: 'Only sellers are authorized to access this resource',
+      });
+    }
+
+    next();
+  };
+};
+
+export const authUser = () => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        message: 'Authentication required',
+      });
+    }
+
+    if (req.user.isSeller) {
+      return res.status(403).json({
+        message: 'Only regular users are authorized to access this resource',
+      });
+    }
+
+    next();
+  };
+};
+
+export const authSellerOrUser = () => {
   return (req, res, next) => {
     if (!req.user) {
       return next(res.status(401).json({
         message: 'Authentication required',
-      }));
-    }
-
-    if (!req.user.isSeller) {
-      return next(res.status(401).json({
-        message: 'Only Admin is Authorized!',
       }));
     }
 
